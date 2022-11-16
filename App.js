@@ -280,7 +280,7 @@ const App: () => Node = () => {
                       <Text
                         style={{
                           marginTop: item.type !== 'thumb' ? -20 : 0,
-                          fontWeight: 'bold'
+                          fontWeight: '400'
                         }}
                       >
                         {it.title}
