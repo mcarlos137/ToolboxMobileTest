@@ -21,45 +21,13 @@ import {
   TouchableOpacity,
   Alert,
 } from 'react-native';
+import {
+  Colors,
+} from 'react-native/Libraries/NewAppScreen';
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Video from 'react-native-video';
 
-import {
-  Colors,
-  DebugInstructions,
-  Header,
-  LearnMoreLinks,
-  ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
-
-//import { Login } from './app/apiCalls/Login'
-
-/*const Section = ({ children, title }): Node => {
-  const isDarkMode = useColorScheme() === 'dark';
-  return (
-    <View style={styles.sectionContainer}>
-      <Text
-        style={[
-          styles.sectionTitle,
-          {
-            color: isDarkMode ? Colors.white : Colors.black,
-          },
-        ]}>
-        {title}
-      </Text>
-      <Text
-        style={[
-          styles.sectionDescription,
-          {
-            color: isDarkMode ? Colors.light : Colors.dark,
-          },
-        ]}>
-        {children}
-      </Text>
-    </View>
-  );
-};*/
 
 const App: () => Node = () => {
 
@@ -98,13 +66,13 @@ const App: () => Node = () => {
       })
       .catch(error => {
         Logout()
-        Alert.alert(error, [
+        Alert.alert('Login request failed', [
           { text: 'Ok' }
         ]);
       });
   }
 
-  const getData = () => {
+  const getData = (authorization, updateData) => {
     let url = 'https://echo-serv.tbxnet.com';
     let path = '/v1/mobile/data';
     let method = 'GET';
@@ -118,20 +86,22 @@ const App: () => Node = () => {
       }
     )
       .then(handleErrors)
-      .then(response =>
-        response.json())
+      .then(response => {
+        return response.json()
+      })
       .then(json => {
-        setData(json)
+        if(updateData){
+          setData(json)
+        }
       })
       .catch(error => {
+        console.log('error')
         Logout()
-        Alert.alert(error, [
-          { text: 'Ok' }
-        ]);
       });
   }
 
   function handleErrors(response) {
+    console.log('response', response)
     if (!response.ok) {
       throw Error(response.status);
     }
@@ -164,7 +134,7 @@ const App: () => Node = () => {
 
   React.useEffect(() => {
     if (authorization !== '') {
-      getData()
+      getData(authorization, true)
     }
   }, [authorization]);
 
@@ -174,6 +144,10 @@ const App: () => Node = () => {
 
   React.useEffect(() => {
     getStoredData('authorization')
+    /*const intervalId = setInterval(() => {
+      getData()
+    }, 5000)
+    return () => clearInterval(intervalId);*/
   }, []);
 
   return (
@@ -309,6 +283,7 @@ const App: () => Node = () => {
           <>
             <TouchableOpacity
               onPress={() => {
+                getData(authorization, false)
                 setCurrentVideoUrl('')
               }}
             >
@@ -319,7 +294,8 @@ const App: () => Node = () => {
               </Text>
             </TouchableOpacity>
           </>
-          <Video source={{ uri: currentVideoUrl }}   // Can be a URL or a local file.
+          <Video
+            source={{ uri: currentVideoUrl }} 
             resizeMode='cover'
             style={styles.video}
             controls={true}
