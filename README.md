@@ -9,6 +9,7 @@ Test Project to demostrate skills for and ToolBox company interview.
 3. Go into ToolboxMobileTest folder
 4. Run command 'npm install' (node required)
 5. For IOS run 'cd ios && pod install && cd ..' 
+6. For Android create file android/local.properties pointing your SDK like this: sdk.dir = /Users/$user/Library/Android/sdk
 
 ## Run (React Native CLI required) 
 
