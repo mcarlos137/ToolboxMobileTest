@@ -19,7 +19,7 @@ import {
   Image,
   Dimensions,
   TouchableOpacity,
-  Alert
+  Alert,
 } from 'react-native';
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -93,12 +93,14 @@ const App: () => Node = () => {
       .then(response =>
         response.json())
       .then(json => {
-        console.log("LOGIN" + ' ' + 'OK')
+        storeData('authorization', json.type + ' ' + json.token)
         setAuthorization(json.type + ' ' + json.token)
       })
       .catch(error => {
-        console.log('LOGIN_STATUS' + ' ' + error)
-        //dispatch({ type: 'LOGIN_STATUS', payload: error.message });
+        Logout()
+        Alert.alert(error, [
+          { text: 'Ok' }
+        ]);
       });
   }
 
@@ -119,11 +121,10 @@ const App: () => Node = () => {
       .then(response =>
         response.json())
       .then(json => {
-        console.log("GET DATA" + ' ' + 'OK')
         setData(json)
       })
       .catch(error => {
-        console.log('LOGIN_STATUS' + ' ' + error)
+        Logout()
         Alert.alert(error, [
           { text: 'Ok' }
         ]);
@@ -138,6 +139,7 @@ const App: () => Node = () => {
   }
 
   const Logout = () => {
+    storeData('authorization', '')
     setAuthorization('')
   }
 
@@ -152,44 +154,31 @@ const App: () => Node = () => {
   const getStoredData = async (key) => {
     try {
       const value = await AsyncStorage.getItem(key)
-      if (value !== null) {
-        // value previously stored
+      if (value !== null && value !== '' && key === 'authorization') {
+        setAuthorization(value)
       }
-      console.log('saved authorization', value)
-      return value
     } catch (e) {
       // error reading value
     }
   }
 
   React.useEffect(() => {
-    storeData('authorization', authorization)
     if (authorization !== '') {
       getData()
     }
   }, [authorization]);
 
-  React.useEffect(() => {
+  /*React.useEffect(() => {
     console.log('data', data)
-  }, [data]);
+  }, [data]);*/
 
   React.useEffect(() => {
     getStoredData('authorization')
   }, []);
 
-  /*React.useEffect(() => {
-    console.log('type: ', type)
-    console.log('token: ', token)
-    storeData('type', type)
-  }, [type]);*/
-
   return (
-    <SafeAreaView
-      style={{
-      }}
-    >
+    <SafeAreaView>
       <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
-      {console.log('authorization', authorization)}
       {(authorization === '' && currentVideoUrl === '') &&
         <View
           style={{
@@ -209,21 +198,13 @@ const App: () => Node = () => {
             }}
           >
             <TouchableOpacity
-              style={{
-                backgroundColor: 'rgb(181, 52, 45)',
-                padding: 9,
-                borderRadius: 5
-              }}
+              style={styles.loginButton}
               onPress={() => {
-                console.log('PRESS')
                 Login()
               }}
             >
               <Text
-                style={{
-                  color: 'white',
-                  fontWeight: '600'
-                }}
+                style={styles.loginButtonText}
               >
                 LOGIN
               </Text>
@@ -251,10 +232,7 @@ const App: () => Node = () => {
                 }}
               >
                 <Text
-                  style={{
-                    fontSize: 18,
-                    fontWeight: '600'
-                  }}
+                  style={styles.itemTitleText}
                 >
                   {item.title}
                 </Text>
@@ -314,89 +292,79 @@ const App: () => Node = () => {
             ))}
           </ScrollView>
           <TouchableOpacity
-            style={{
-              backgroundColor: 'white',
-              borderColor: 'rgb(181, 52, 45)',
-              borderWidth: 1,
-              padding: 7,
-              borderRadius: 5,
-              alignSelf: 'center'
-            }}
+            style={styles.logoutButton}
             onPress={() => {
-              console.log('PRESS')
               Logout()
             }}
           >
             <Text
-              style={{
-                color: 'rgb(181, 52, 45)',
-                fontWeight: '600'
-              }}
+              style={styles.logoutButtonText}
             >
               LOGOUT
             </Text>
           </TouchableOpacity>
         </View>}
       {(currentVideoUrl !== '') &&
-        <View
-          style={{
-          }}
-        >
-          <View>
+        <>
+          <>
             <TouchableOpacity
               onPress={() => {
                 setCurrentVideoUrl('')
               }}
             >
               <Text
-                style={{
-                  fontSize: 18,
-                  marginBottom: 20,
-                  marginLeft: 5
-                }}
+                style={styles.backButtonText}
               >
                 {'< ' + 'Back'}
               </Text>
             </TouchableOpacity>
-          </View>
+          </>
           <Video source={{ uri: currentVideoUrl }}   // Can be a URL or a local file.
             resizeMode='cover'
-            style={{
-              width: 400,
-              height: 300,
-              alignSelf: 'center'
-            }}
+            style={styles.video}
             controls={true}
           />
-        </View>
+        </>
       }
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
-  sectionContainer: {
-    marginTop: 32,
-    paddingHorizontal: 24,
+  loginButton: {
+    backgroundColor: 'rgb(181, 52, 45)',
+    padding: 9,
+    borderRadius: 5
   },
-  sectionTitle: {
-    fontSize: 24,
-    fontWeight: '600',
+  loginButtonText: {
+    color: 'white',
+    fontWeight: '600'
   },
-  sectionDescription: {
-    marginTop: 8,
+  itemTitleText: {
     fontSize: 18,
-    fontWeight: '400',
+    fontWeight: '600'
   },
-  highlight: {
-    fontWeight: '700',
+  logoutButton: {
+    backgroundColor: 'white',
+    borderColor: 'rgb(181, 52, 45)',
+    borderWidth: 1,
+    padding: 7,
+    borderRadius: 5,
+    alignSelf: 'center'
   },
-  backgroundVideo: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    bottom: 0,
-    right: 0,
+  logoutButtonText: {
+    color: 'rgb(181, 52, 45)',
+    fontWeight: '600'
+  },
+  backButtonText: {
+    fontSize: 18,
+    marginBottom: 20,
+    marginLeft: 5
+  },
+  video: {
+    width: 400,
+    height: 300,
+    alignSelf: 'center'
   },
 });
 
