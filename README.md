@@ -1,4 +1,4 @@
-# ToolboxMobileTest
+# ToolboxMobileTest - React Native
 
 Test Project to demostrate skills for and ToolBox company interview.
 
